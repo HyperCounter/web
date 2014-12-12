@@ -23,7 +23,10 @@ class CounterApi < Sinatra::Base
   configure do
     $session ||= Moped::Session.connect(ENV.fetch('MONGOSOUP_URL', 'mongodb://127.0.0.1:27017/cloud_counter'))
     $counters = $session['counters']
-    disable :raise_errors
+    # egy uj collection-ben egyetlen mezo, amit findAndUpdate-el novelgetunk
+    # $inc, majd azt az erteket hasznaljuk hex-e konvertalva friendly id-kent
+    $counters.indexes.create({id: 1}, {unique: true})
+    disable :show_exceptions
   end
 
   helpers Sinatra::JSON
@@ -45,13 +48,23 @@ class CounterApi < Sinatra::Base
     end
 
     def visible_members_of(counter)
-      counter.slice('name', 'value', 'accountId').tap do |result|
-        result['id'] = counter['_id'].to_s
+      counter.slice('id', 'name', 'value', 'accountId')
+    end
+
+    def render_counter(id)
+      if counter = $counters.find({id: id}).one
+        json visible_members_of(counter)
+      else
+        json_error StandardError.new, 404, {message: "Counter with id='#{id}' not found"}
       end
     end
   end
 
   error ParameterMissingError do |e|
+    json_error e, 400
+  end
+
+  error Moped::Errors::OperationFailure do |e|
     json_error e, 400
   end
 
@@ -61,24 +74,36 @@ class CounterApi < Sinatra::Base
     json counters.map {|c| visible_members_of(c) }
   end
 
-  post '/counters' do
-    counter_params = visible_members_of(params)
-    counter_params['events'] = []
-    counter_params['value'] = params['initialValue'] || 0
+  get '/counters/:id' do |id|
+    render_counter(id)
+  end
 
-    new_counter = $session.with(safe: true) do
+  post '/counters' do
+    counter_params           = visible_members_of(params)
+    counter_params['events'] = []
+    counter_params['value']  = params.fetch('initialValue', 0).to_i
+
+    $session.with(safe: true) do
       $counters.insert(counter_params)
     end
 
-    json new_counter
-  end
-
-  get '/counters/:id' do |id|
-    json ({id: 'x', name: 'x', value: 0})
+    if created = $counters.find({id: counter_params['id']}).one
+      json visible_members_of(created)
+    else
+      json_erros StandardError.new, 418, {message: 'Cannot create counter'}
+    end
   end
 
   put '/counters/:id' do |id|
-    json ({id: 'x', name: 'x', value: 0}), status: 400
+    timestamp = Time.at(params.fetch('timestamp') { Time.now.to_i }).utc
+    delta     = extract!('delta').to_i
+
+    $counters.find({id: id}).update({
+      '$inc' => {'value' => delta},
+      '$push' => {events: {timestamp: timestamp, delta: delta}}
+    })
+
+    render_counter(id)
   end
 
 end
