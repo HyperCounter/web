@@ -3,6 +3,8 @@ require 'json'
 require 'rack/contrib/bounce_favicon'
 require 'rack/json_body_parser'
 require 'active_support/core_ext/hash/slice'
+require "net/http"
+require "uri"
 
 # raised by extract! used if POST /photos does not include a `photo`
 # key
@@ -27,6 +29,7 @@ class CounterApi < Sinatra::Base
     # $inc, majd azt az erteket hasznaljuk hex-e konvertalva friendly id-kent
     $counters.indexes.create({id: 1}, {unique: true, dropDups: true})
     disable :show_exceptions
+    enable :static
   end
 
   helpers Sinatra::JSON
@@ -102,6 +105,15 @@ class CounterApi < Sinatra::Base
       '$inc' => {'value' => delta},
       '$push' => {events: {timestamp: timestamp, delta: delta}}
     })
+
+    begin
+      Thread.new do
+        uri = URI.parse('http://dig-scala.herokuapp.com/hyperApi')
+        counter = $counters.find({id: id}).one
+        name = counter ? counter['name'] : ''
+        Net::HTTP.post_form(uri, name: name)
+      end
+    end
 
     render_counter(id)
   end
