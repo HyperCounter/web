@@ -25,7 +25,7 @@ class CounterApi < Sinatra::Base
     $counters = $session['counters']
     # egy uj collection-ben egyetlen mezo, amit findAndUpdate-el novelgetunk
     # $inc, majd azt az erteket hasznaljuk hex-e konvertalva friendly id-kent
-    $counters.indexes.create({id: 1}, {unique: true})
+    $counters.indexes.create({id: 1}, {unique: true, dropDups: true})
     disable :show_exceptions
   end
 
