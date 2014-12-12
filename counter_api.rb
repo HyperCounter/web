@@ -1,8 +1,7 @@
 require "sinatra/json"
 
 configure do
-  session = Moped::Session.new([ '127.0.0.1:27017' ])
-  session.use "cloud_counter_#{ENV['RACK_ENV']}"
+  session ||= Moped::Session.connect(ENV.fetch('MONGOSOUP_URL', '127.0.0.1:27017'))
 end
 
 post '/counters' do
