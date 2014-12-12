@@ -71,6 +71,10 @@ class CounterApi < Sinatra::Base
     json_error e, 400
   end
 
+  get '/' do
+    File.read(File.join('public', 'index.html'))
+  end
+
   get '/counters' do
     account_id = extract!('accountId')
     counters = $counters.find({accountId: account_id})
