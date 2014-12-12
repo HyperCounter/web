@@ -72,12 +72,19 @@ class CounterApi < Sinatra::Base
   end
 
   get '/' do
-    File.read(File.join('public', 'index.html'))
+    counters = $counters.find()
+    erb :index
+  end
+
+  get '/:account_id' do |account_id|
+    counters = $counters.find({accountId: account_id})
+    erb :index
   end
 
   get '/counters' do
-    account_id = extract!('accountId')
-    counters = $counters.find({accountId: account_id})
+    # account_id = extract!('accountId')
+    # counters = $counters.find({accountId: account_id})
+    counters = $counters.find()
     json counters.map {|c| visible_members_of(c) }
   end
 
