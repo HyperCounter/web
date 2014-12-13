@@ -104,7 +104,7 @@ class CounterApi < Sinatra::Base
   end
 
   put '/counters/:id' do |id|
-    timestamp = Time.at(params.fetch('timestamp').to_i { Time.now.to_i }).utc
+    timestamp = Time.at(params.fetch('timestamp') { Time.now.to_i }.to_i).utc
     delta     = extract!('delta').to_i
 
     $counters.find({id: id}).update({
