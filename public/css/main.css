@@ -101,7 +101,13 @@ body {
   background-color: #757575;
 }
 .small { font-size: 1em; }
-.counter .small { position: absolute; text-align: left; width: 50%; margin: 0 25%; color: #999; font-family: monospace; }
+.counter .small {
+  text-align: left;
+  width: 50%;
+  margin: 0 25%;
+  color: #999;
+  font-family: monospace;
+}
 h1 {
   margin: 0;
   font-size: 1.3em;
