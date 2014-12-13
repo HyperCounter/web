@@ -9,20 +9,16 @@ var HyperCount = React.createClass({
       type: 'PUT',
       data: {delta: delta}
     }).done(function(data) {
+      var old_counters = _.clone(this.state.counters, true);
+      var updated_counters = _.map(old_counters, function(counter) {
+        if(counter.id == data.id) {
+          return data;
+        } else {
+          return counter;
+        }
+      }.bind(this));
       this.setState({counters: updated_counters});
     }.bind(this));
-  },
-
-  updateCounterWithDelta: function(counter, delta) {
-    var old_counters = _.clone(this.state.counters, true);
-    var updated_counters = _.map(old_counters, function(counter) {
-      if(counter.id == data.id) {
-        return data;
-      } else {
-        return counter;
-      }
-    }.bind(this));
-    this.setState({counters: updated_counters});
   },
 
   componentDidMount: function() {
