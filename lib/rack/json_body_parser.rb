@@ -11,6 +11,8 @@ module Rack
         @app.call(env)
       rescue JSON::ParserError => ex
         [400, { 'Content-Type' => 'application/json' }, [{message: ex.to_s}.to_json]]
+      rescue JSON::GeneratorError => ex # - source sequence is illegal/malformed utf-8
+        [400, { 'Content-Type' => 'application/json' }, [{message: ex.to_s}.to_json]]
       end
     end
   end
