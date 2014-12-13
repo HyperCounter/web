@@ -125,6 +125,7 @@ class CounterApi < Sinatra::Base
   end
 
   get '/:account_id' do |account_id|
+    @account_id = account_id
     counters = $counters.find({accountId: account_id})
     erb :index
   end
