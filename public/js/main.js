@@ -54,6 +54,7 @@ var HyperCount = React.createClass({
     handler = (function(delta) { return this.handleClick.bind(null, counter, delta) }).bind(this);
     return (
       <li className="counter" key={counter.id}>
+        <p className="small">{counter.id}</p>
         <h2>{counter.name}</h2>
         <span className="value">{counter.value}</span>
         <a className="decrement" href="#" onClick={handler(-1)}>-</a>
