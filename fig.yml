@@ -1,0 +1,21 @@
+mongo:
+  image: mongo:latest
+  volumes:
+    - ~/.docker-volumes/hyper_counter/mongo/:/data/
+  ports:
+    - 27017:27017
+  command: 'mongod --smallfiles'
+
+web:
+  environment:
+    RACK_ENV: 'development'
+    MONGOSOUP_URL: 'mongodb://mongo:27017/hyper_counter'
+  build: .
+  command: './bin/thin -p 7009 -e $RACK_ENV start'
+  working_dir: /usr/src/app
+  volumes:
+    - .:/usr/src/app
+  ports:
+    - 7009:7009
+  links:
+    - mongo
