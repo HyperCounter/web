@@ -23,7 +23,7 @@ class CounterApi < Sinatra::Base
   use Rack::JsonBodyParser
 
   configure do
-    $session ||= Moped::Session.connect(ENV.fetch('MONGOSOUP_URL', 'mongodb://127.0.0.1:27017/cloud_counter'))
+    $session ||= Moped::Session.connect(ENV.fetch('MONGOSOUP_URL', 'mongodb://127.0.0.1:27017/hyper_counter'))
     $counters = $session['counters']
     # egy uj collection-ben egyetlen mezo, amit findAndUpdate-el novelgetunk
     # $inc, majd azt az erteket hasznaljuk hex-e konvertalva friendly id-kent
